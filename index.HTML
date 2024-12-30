@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monu Stock Calculator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e3d58;
+            color: #fff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+            background-color: #2d4f6c;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+            color: #e0e0e0;
+        }
+
+        .section input, .section select {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: 2px solid #445e75;
+            border-radius: 6px;
+            background-color: #1c2a38;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .section input:focus, .section select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #2d4f6c;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table, th, td {
+            border: 1px solid #445e75;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            color: #fff;
+        }
+
+        th {
+            background-color: #3a5a77;
+        }
+
+        tr:nth-child(even) {
+            background-color: #1c2a38;
+        }
+
+        tr:hover {
+            background-color: #4CAF50;
+        }
+
+        .totals {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .totals td {
+            padding: 10px;
+        }
+
+        .submit-btn {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .submit-btn button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn button:hover {
+            background-color: #45a049;
+        }
+
+        .submit-btn button:active {
+            background-color: #388e3c;
+        }
+
+        .password-section {
+            margin-bottom: 20px;
+        }
+
+        .password-section label {
+            font-size: 16px;
+            color: #e0e0e0;
+        }
+
+        .password-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #445e75;
+            border-radius: 6px;
+            background-color: #1c2a38;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .password-section input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        button[type="button"] {
+            padding: 8px 15px;
+            font-size: 14px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button[type="button"]:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Monu Stock Calculator</h1>
+
+    <!-- Password Section -->
+    <div class="password-section">
+        <label for="password">Enter Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter Password" required>
+        <button type="button" onclick="validatePassword()">Submit Password</button>
+    </div>
+
+    <!-- Order Items Section -->
+    <div class="section" id="orderItemsSection" style="display:none;">
+        <h2>Order Items</h2>
+        <table id="orderItems">
+            <thead>
+                <tr>
+                    <th>Item Description</th>
+                    <th>Quantity</th>
+                    <th>Rate (?)</th>
+                    <th>Basic Value (?)</th>
+                    <th>CGST (%)</th>
+                    <th>SGST (%)</th>
+                    <th>IGST (%)</th>
+                    <th>Total Amount (?)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" name="itemDescription[]" required></td>
+                    <td><input type="number" name="quantity[]" min="1" required oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="rate[]" step="0.01" min="0" required oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="basicValue[]" step="0.01" min="0" readonly></td>
+                    <td><input type="number" name="cgst[]" step="0.01" min="0" oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="sgst[]" step="0.01" min="0" oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="igst[]" step="0.01" min="0" oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="totalAmount[]" step="0.01" min="0" readonly></td>
+                    <td><button type="button" onclick="addItemRow()">Add</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Totals and GST Summary -->
+    <div class="totals" id="totalsSection" style="display:none;">
+        <h2>GST Summary</h2>
+        <table>
+            <tr>
+                <td>Subtotal (?)</td>
+                <td><input type="number" id="subtotal" name="subtotal" step="0.01" min="0" readonly></td>
+            </tr>
+            <tr>
+                <td>Total CGST (?)</td>
+                <td><input type="number" id="totalCgst" name="totalCgst" step="0.01" min="0" readonly></td>
+            </tr>
+            <tr>
+                <td>Total SGST (?)</td>
+                <td><input type="number" id="totalSgst" name="totalSgst" step="0.01" min="0" readonly></td>
+            </tr>
+            <tr>
+                <td>Total IGST (?)</td>
+                <td><input type="number" id="totalIgst" name="totalIgst" step="0.01" min="0" readonly></td>
+            </tr>
+            <tr>
+                <td><strong>Total Amount (?)</strong></td>
+                <td><input type="number" id="totalAmount" name="totalAmount" step="0.01" min="0" readonly></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="submit-btn" id="submitBtnSection" style="display:none;">
+        <button type="button" onclick="saveData()">Save Order</button>
+    </div>
+</div>
+
+<script>
+    // Function to validate password
+    function validatePassword() {
+        var enteredPassword = document.getElementById("password").value;
+        var correctPassword = "5904";
+        if (enteredPassword === correctPassword) {
+            document.getElementById("orderItemsSection").style.display = 'block';
+            document.getElementById("totalsSection").style.display = 'block';
+            document.getElementById("submitBtnSection").style.display = 'block';
+            loadSavedData(); // Load previously saved data
+        } else {
+            alert("Incorrect password! Please try again.");
+        }
+    }
+
+    // Function to calculate Basic Value, GST, and Total Amount for each item
+    function calculateAmounts() {
+        let rows = document.querySelectorAll("#orderItems tbody tr");
+        let subtotal = 0;
+        let totalCgst = 0;
+        let totalSgst = 0;
+        let totalIgst = 0;
+
+        rows.forEach((row) => {
+            let quantity = parseFloat(row.querySelector('input[name="quantity[]"]').value) || 0;
+            let rate = parseFloat(row.querySelector('input[name="rate[]"]').value) || 0;
+            let cgst = parseFloat(row.querySelector('input[name="cgst[]"]').value) || 0;
+            let sgst = parseFloat(row.querySelector('input[name="sgst[]"]').value) || 0;
+            let igst = parseFloat(row.querySelector('input[name="igst[]"]').value) || 0;
+
+            // Calculate Basic Value (Quantity * Rate)
+            let basicValue = quantity * rate;
+            row.querySelector('input[name="basicValue[]"]').value = basicValue.toFixed(2);
+
+            // Calculate GST amounts
+            let cgstAmount = (basicValue * cgst) / 100;
+            let sgstAmount = (basicValue * sgst) / 100;
+            let igstAmount = (basicValue * igst) / 100;
+
+            // Calculate Total Amount for this item
+            let totalAmount = basicValue + cgstAmount + sgstAmount + igstAmount;
+            row.querySelector('input[name="totalAmount[]"]').value = totalAmount.toFixed(2);
+
+            // Update totals
+            subtotal += basicValue;
+            totalCgst += cgstAmount;
+            totalSgst += sgstAmount;
+            totalIgst += igstAmount;
+        });
+
+        // Update the totals for CGST, SGST, IGST, and Total Amount
+        document.getElementById("subtotal").value = subtotal.toFixed(2);
+        document.getElementById("totalCgst").value = totalCgst.toFixed(2);
+        document.getElementById("totalSgst").value = totalSgst.toFixed(2);
+        document.getElementById("totalIgst").value = totalIgst.toFixed(2);
+        document.getElementById("totalAmount").value = (subtotal + totalCgst + totalSgst + totalIgst).toFixed(2);
+    }
+
+    // Function to add a new item row
+    function addItemRow() {
+        let table = document.getElementById("orderItems").getElementsByTagName('tbody')[0];
+        let newRow = table.insertRow();
+
+        newRow.innerHTML = `
+            <td><input type="text" name="itemDescription[]" required></td>
+            <td><input type="number" name="quantity[]" min="1" required oninput="calculateAmounts()"></td>
+            <td><input type="number" name="rate[]" step="0.01" min="0" required oninput="calculateAmounts()"></td>
+            <td><input type="number" name="basicValue[]" step="0.01" min="0" readonly></td>
+            <td><input type="number" name="cgst[]" step="0.01" min="0" oninput="calculateAmounts()"></td>
+            <td><input type="number" name="sgst[]" step="0.01" min="0" oninput="calculateAmounts()"></td>
+            <td><input type="number" name="igst[]" step="0.01" min="0" oninput="calculateAmounts()"></td>
+            <td><input type="number" name="totalAmount[]" step="0.01" min="0" readonly></td>
+            <td><button type="button" onclick="deleteItemRow(this)">Delete</button></td>
+        `;
+    }
+
+    // Function to delete an item row
+    function deleteItemRow(button) {
+        let row = button.closest('tr');
+        row.remove();
+        calculateAmounts();
+    }
+
+    // Function to save the form data
+    function saveData() {
+        let orderItems = [];
+        let rows = document.querySelectorAll("#orderItems tbody tr");
+
+        rows.forEach((row) => {
+            let item = {
+                description: row.querySelector('input[name="itemDescription[]"]').value,
+                quantity: row.querySelector('input[name="quantity[]"]').value,
+                rate: row.querySelector('input[name="rate[]"]').value,
+                basicValue: row.querySelector('input[name="basicValue[]"]').value,
+                cgst: row.querySelector('input[name="cgst[]"]').value,
+                sgst: row.querySelector('input[name="sgst[]"]').value,
+                igst: row.querySelector('input[name="igst[]"]').value,
+                totalAmount: row.querySelector('input[name="totalAmount[]"]').value
+            };
+            orderItems.push(item);
+        });
+
+        localStorage.setItem("orderItems", JSON.stringify(orderItems));
+        alert("Data saved successfully!");
+    }
+
+    // Function to load saved data
+    function loadSavedData() {
+        let savedData = JSON.parse(localStorage.getItem("orderItems"));
+        if (savedData) {
+            let table = document.getElementById("orderItems").getElementsByTagName('tbody')[0];
+
+            savedData.forEach((item) => {
+                let newRow = table.insertRow();
+
+                newRow.innerHTML = `
+                    <td><input type="text" name="itemDescription[]" value="${item.description}" required></td>
+                    <td><input type="number" name="quantity[]" value="${item.quantity}" min="1" required oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="rate[]" value="${item.rate}" step="0.01" min="0" required oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="basicValue[]" value="${item.basicValue}" step="0.01" min="0" readonly></td>
+                    <td><input type="number" name="cgst[]" value="${item.cgst}" step="0.01" min="0" oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="sgst[]" value="${item.sgst}" step="0.01" min="0" oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="igst[]" value="${item.igst}" step="0.01" min="0" oninput="calculateAmounts()"></td>
+                    <td><input type="number" name="totalAmount[]" value="${item.totalAmount}" step="0.01" min="0" readonly></td>
+                    <td><button type="button" onclick="deleteItemRow(this)">Delete</button></td>
+                `;
+            });
+
+            calculateAmounts(); // Recalculate totals for saved items
+        }
+    }
+
+    // Shortkey functionality
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 'n') {
+            addItemRow(); // Ctrl + N to add a new item row
+        } else if (event.ctrlKey && event.key === 's') {
+            saveData(); // Ctrl + S to save data
+        } else if (event.ctrlKey && event.key === 'c') {
+            calculateAmounts(); // Ctrl + C to calculate totals
+        }
+    });
+</script>
+
+</body>
+</html>
